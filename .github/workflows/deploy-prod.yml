@@ -35,6 +35,6 @@ jobs:
                   --arg repo "${{ github.repository }}" \
                   --arg ref "${{ github.sha }}" \
                   --arg actor "${{ github.actor }}" \
-                  '{event_type: "opeanapi-updated", client_payload: {repo: $repo, ref: $ref, actor: $actor}}')"
+                  '{event_type: "openapi-updated", client_payload: {repo: $repo, ref: $ref, actor: $actor}}')"
 
           echo "Dispatched openapi-updated event to $DOCS_REPO"

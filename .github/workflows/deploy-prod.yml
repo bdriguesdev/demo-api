@@ -1,0 +1,40 @@
+name: Deploy to prod
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+env:
+  DOCS_REPO: ${{ github.repository_owner }}/demo-docs
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy API to prod
+        run: |
+          echo "Pretending to deploy the API to prod"
+          echo "Deployed commit ${{ github.sha }}"
+        
+      - name: Notify docs repo of new prod deploy
+        env: 
+          TOKEN: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::DOCS_REPO_DISPATCH_TOKEN secret is not set" >&2
+            exit 1
+          fi
+
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${DOCS_REPO}/dispatches" \
+            -d "$(jq -n \
+                  --arg repo "${{ github.repository }}" \
+                  --arg ref "${{ github.sha }}" \
+                  --arg actor "${{ github.actor }}" \
+                  '{event_type: "opeanapi-updated", client_payload: {repo: $repo, ref: $ref, actor: $actor}}')"
+
+          echo "Dispatched openapi-updated event to $DOCS_REPO"
